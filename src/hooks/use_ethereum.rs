@@ -239,15 +239,20 @@ impl UseEthereumHandle {
 }
 
 #[hook]
-pub fn use_ethereum(default: Option<Provider>) -> UseEthereumHandle {
+pub fn use_ethereum(default: Option<Provider>) -> Option<UseEthereumHandle> {
     let connected = use_state(move || false);
     let accounts = use_state(move || None as Option<Vec<H160>>);
     let chain_id = use_state(move || None as Option<U256>);
 
-    UseEthereumHandle {
-        provider: default.unwrap_or_else(|| Provider::default().unwrap().unwrap()),
-        connected,
-        accounts,
-        chain_id,
+    if let Some(provider) = default.or(Provider::default().unwrap()) {
+        Some(UseEthereumHandle {
+            provider,
+            connected,
+            accounts,
+            chain_id,
+        })
+    } else {
+        None
     }
+    
 }

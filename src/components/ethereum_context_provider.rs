@@ -17,8 +17,8 @@ pub fn EthereumContextProvider(props: &Props) -> Html {
     let ethereum = use_ethereum(None);
 
     html! {
-        <ContextProvider<UseEthereumHandle> context={ethereum}>
+        <ContextProvider<Option<UseEthereumHandle>> context={ethereum}>
             {for props.children.iter()}
-        </ContextProvider<UseEthereumHandle>>
+        </ContextProvider<Option<UseEthereumHandle>>>
     }
 }
