@@ -1,4 +1,5 @@
 use crate::{Chain, ERC20Asset};
+use serde_json::json;
 use wasm_bindgen::JsValue;
 use web3::{
     futures::StreamExt,
@@ -228,6 +229,12 @@ impl UseEthereumHandle {
             .await
             .map(|_| ())
             .map_err(|_| JsValue::from("error deserializing request params"))
+    }
+
+    pub async fn request(&self, method: &str, params: Vec<serde_json::Value>) -> web3::error::Result<serde_json::value::Value> {
+        let transport = Eip1193::new(self.provider.clone());
+        let (request_id, request) = transport.prepare(method, params);
+        transport.send(request_id, request).await
     }
 }
 
