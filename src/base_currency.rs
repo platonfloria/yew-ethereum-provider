@@ -1,4 +1,4 @@
-use web3::transports::eip_1193::BaseCurrency;
+use crate::BaseCurrency;
 
 pub fn eth() -> BaseCurrency {
     BaseCurrency {

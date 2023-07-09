@@ -1,6 +1,8 @@
-use crate::hooks::UseEthereumHandle;
+use crate::{
+    hooks::UseEthereumHandle,
+    Chain,
+};
 use wasm_bindgen_futures::spawn_local;
-use web3::transports::eip_1193::Chain;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]

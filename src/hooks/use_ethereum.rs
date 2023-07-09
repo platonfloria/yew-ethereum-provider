@@ -1,8 +1,10 @@
+use crate::{Chain, ERC20Asset};
 use wasm_bindgen::JsValue;
 use web3::{
     futures::StreamExt,
-    transports::eip_1193::{Chain, ERC20Asset, Eip1193, Provider},
+    transports::eip_1193::{Eip1193, Provider},
     types::{H160, U256},
+    Transport,
 };
 use yew::{platform::spawn_local, prelude::*};
 
@@ -78,16 +80,16 @@ impl UseEthereumHandle {
                 });
             }
 
-            // {
-            //     let this = self.clone();
-            //     spawn_local(async move {
-            //         this.on_disconnect(|chain_id| {
-            //             log::info!("event: disconnect: {}", chain_id);
-            //             this.connected.set(false);
-            //         })
-            //         .await;
-            //     });
-            // }
+            {
+                let this = self.clone();
+                spawn_local(async move {
+                    this.on_disconnect(|chain_id| {
+                        log::info!("event: disconnect: {}", chain_id);
+                        this.connected.set(false);
+                    })
+                    .await;
+                });
+            }
         };
         Ok(())
     }
@@ -180,7 +182,7 @@ impl UseEthereumHandle {
     /// * `chain` - a `Chain` instance representing the target chain
     ///
     pub async fn switch_chain_with_fallback(&self, chain: &Chain) -> Result<(), JsValue> {
-        self.add_chain(chain).await?;
+        self.add_chain(chain).await;
         self.switch_chain(&chain.chain_id).await?;
         Ok(())
     }
@@ -194,9 +196,9 @@ impl UseEthereumHandle {
      */
     pub async fn switch_chain(&self, chain_id: &str) -> Result<JsValue, JsValue> {
         log::info!("switch_chain");
-        let transport = Eip1193::new(self.provider.clone());
-        transport
-            .switch_chain(chain_id)
+
+        self
+            .request("wallet_switchEthereumChain", vec![json!({"chainId": chain_id})])
             .await
             .map(|_| JsValue::from(chain_id))
             .map_err(|_| JsValue::from("error deserializing request params"))
@@ -208,20 +210,21 @@ impl UseEthereumHandle {
     pub async fn add_chain(&self, chain: &Chain) -> Result<(), JsValue> {
         log::info!("add_chain");
 
-        let transport = Eip1193::new(self.provider.clone());
-        transport
-            .add_chain(chain)
+        self
+            .request("wallet_addEthereumChain", vec![json!(&chain)])
             .await
             .map(|_| ())
             .map_err(|_| JsValue::from("error deserializing request params"))
     }
 
     pub async fn watch_asset(&self, asset: &ERC20Asset) -> Result<(), JsValue> {
-        log::info!("add_chain");
+        log::info!("watch_asset");
 
-        let transport = Eip1193::new(self.provider.clone());
-        transport
-            .watch_asset(asset)
+        self
+            .request("wallet_watchAsset", vec![json!({
+                "r#type": String::from("ERC20"),
+                "options": asset
+            })])
             .await
             .map(|_| ())
             .map_err(|_| JsValue::from("error deserializing request params"))
